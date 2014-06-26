@@ -8,6 +8,7 @@ import fi.jumi.actors.eventizers.EventizerProvider;
 import fi.jumi.actors.listeners.*;
 
 import javax.annotation.concurrent.*;
+
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -38,9 +39,14 @@ public class SingleThreadedActors extends Actors {
      * When using {@link CrashEarlyFailureHandler}, will rethrow uncaught exceptions from actors to the caller of this
      * method.
      */
-    public void processEventsUntilIdle() {
-        boolean idle;
-        do {
+    public boolean processEventsUntilIdle(int limit) {
+    	if (limit < 1) {
+    		throw new IllegalArgumentException("limit: " + limit);
+    	}
+    	
+        boolean idle = false;
+        
+        for (; !idle && limit > 0; limit --) {
             idle = true;
             for (MessageProcessor actorThread : actorThreads) {
                 if (actorThread.processNextMessageIfAny()) {
@@ -50,8 +56,14 @@ public class SingleThreadedActors extends Actors {
                     actorThreads.remove(actorThread);
                 }
             }
-        } while (!idle);
+        };
+        
+        return idle;
     }
+    public void processEventsUntilIdle() {
+    	processEventsUntilIdle(Integer.MAX_VALUE);
+    }
+
 
     /**
      * Returns an asynchronous {@link Executor} which works the same way as all the actors in this container. Useful in

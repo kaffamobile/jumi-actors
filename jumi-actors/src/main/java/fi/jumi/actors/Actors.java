@@ -43,6 +43,9 @@ public abstract class Actors {
     // Also MessageProcessor is package-private, so anyways third parties cannot extend this class.
     abstract void startActorThread(MessageProcessor actorThread);
 
+    protected void messagePosted() {
+    	
+    }
 
     @ThreadSafe
     private class ActorThreadImpl implements ActorThread, MessageProcessor {
@@ -63,6 +66,7 @@ public abstract class Actors {
 
         public void send(MessageToActor<?> task) {
             taskQueue.send(task);
+            messagePosted();
         }
 
         @Override
@@ -86,6 +90,11 @@ public abstract class Actors {
             // so we don't need to do it here.
             task.run();
         }
+
+		@Override
+		public Actors getActors() {
+			return Actors.this;
+		}
     }
 
     @ThreadSafe

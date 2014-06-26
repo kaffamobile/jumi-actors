@@ -37,4 +37,6 @@ public interface ActorThread {
      * which will stop that {@code ActorThread} immediately.
      */
     void stop();
+    
+    Actors getActors();
 }
